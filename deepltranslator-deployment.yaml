@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: deepltranslator
+  name: deepltranslator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deepltranslator
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: deepltranslator
+    spec:
+      containers:
+        - env:
+            - name: SELENIUM_URLS
+              value: 'selenium-service2.default.svc.cluster.local:4444,selenium-service.default.svc.cluster.local:4444'
+            - name: DEEPL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: deepl
+                  key: DEEPL_USERNAME
+            - name: DEEPL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: deepl
+                  key: DEEPL_PASSWORD
+          image: guestros/deepl-translator-interactor:latest
+          name: deepltranslator
+          ports:
+            - containerPort: 8080
+          resources: {}
+      restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: deepltranslator
+  name: deepltranslator-service
+spec:
+  type: NodePort
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+      nodePort: 31234
+  selector:
+    app: deepltranslator

@@ -1,0 +1,3 @@
+selenium
+fastapi
+uvicorn[standard]
