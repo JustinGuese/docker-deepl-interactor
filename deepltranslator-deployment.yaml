@@ -32,7 +32,7 @@ spec:
           image: guestros/deepl-translator-interactor:latest
           name: deepltranslator
           ports:
-            - containerPort: 8080
+            - containerPort: 8000
           resources: {}
       restartPolicy: Always
 status: {}
@@ -46,9 +46,9 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - name: "8080"
-      port: 8080
-      targetPort: 8080
+    - name: "8000"
+      port: 8000
+      targetPort: 8000
       nodePort: 31234
   selector:
     app: deepltranslator

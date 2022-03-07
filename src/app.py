@@ -64,11 +64,13 @@ app = FastAPI()
 @app.on_event("startup")
 async def startup_event():
     global DRIVERS
-    for host in SELENIUM_URLS:
-        driver = webdriver.Remote(host + "/wd/hub", options=options)
-        DRIVERS.append([driver, True]) # 2nd one is ready true false
-        # log in 
-        login(driver)
+    # for host in SELENIUM_URLS: # cant do async for now, use first one only
+    driver = webdriver.Remote(SELENIUM_URLS[1] + "/wd/hub", options=options)
+    DRIVERS.append([driver, True]) # 2nd one is ready true false
+    # log in 
+    url = 'https://www.deepl.com/translator#en/de'
+    driver.get(url)
+    login(driver)
 
 def findReadyDriver():
     global DRIVERS
@@ -124,22 +126,18 @@ def getTranslation(text, sourceLang = "en", targetLang = "de"):
     DRIVERS[driverpos][1] = True # set to false (in progress)
     return text_target, driverpos
 
-@app.get("/", response_model=TranslationResponse)
-async def getTranslation(item: TranslationRequest):
+@app.post("/", response_model=TranslationResponse)
+def getTrans(item: TranslationRequest):
     trans, driverpos = getTranslation(item.text, sourceLang = item.sourceLanguage, targetLang = item.targetLanguage)
     return TranslationResponse(
         text = trans,
         driver_used = driverpos
     )
-# def handle(req: str):
-#     """handle a request to the function
-#     Args:
-#         req (str): request body
-#     """
-#     # needs sourceLang, targetLang and text as json array
-#     data = json.loads(req)
-#     for required in ["sourceLang", "targetLang", "text"]:
-#         if required not in data:
-#             raise Exception("Missing required field: %s" % required)
-#     translated, driverpos = getTranslation(data["text"], data["sourceLang"], data["targetLang"])
-#     return {"status_code": 200, "text" : translated, "driver_used": SELENIUM_URLS[driverpos] }
+@app.on_event("shutdown")
+def shutdown_event():
+    global DRIVERS
+    for driver in DRIVERS:
+        try:
+            driver.shutdown()
+        except:
+            pass

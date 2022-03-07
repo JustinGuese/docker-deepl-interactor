@@ -4,6 +4,6 @@ services:
     build: .
     image: guestros/deepl-translator-interactor:latest
     ports:
-      - "8080:8080"
+      - "8000:8000"
     environment:
       - SELENIUM_HOSTS="selenium-service2.default.svc.cluster.local:4444,selenium-service.default.svc.cluster.local:4444"
